@@ -4,12 +4,12 @@ fetch(url)
     .then(response => response.json())
     .then(data => {
         const dataSet = data.monthlyVariance
+        const baseTemp =data.baseTemperature;
+        console.log(data);
 
-        console.log(dataSet);
-
-        const width = 1000;
+        const width = 1200;
         const height = 400;
-        const margin = { left: 70, right: 50, top: 50, bottom: 50 }
+        const margin = { left: 60, right: 10, top: 20, bottom: 30 }
 
         const years = Array.from(new Set(dataSet.map(d => d.year))).map(String);
         const months = [
@@ -46,8 +46,6 @@ fetch(url)
             .attr("transform", `translate(${margin.left}, 0)`) // Correct position
             .call(yAxis);
 
-
-
         const colorScale = d3.scaleSequential(d3.interpolateCool)
             .domain(d3.extent(dataSet, d => d.variance));
 
@@ -57,6 +55,9 @@ fetch(url)
             .append("rect")
             .attr("x", d => xScale(String(d.year)))
             .attr("y", d => yScale(d.month - 1))
+            .attr("data-month",d=>d.month)
+            .attr("data-year",d=>d.year)
+            .attr("data-temp",d=>d.month)
             .attr("width", xScale.bandwidth())
             .attr("height", yScale.bandwidth())
             .attr("fill", d => colorScale(d.variance))
@@ -90,13 +91,47 @@ fetch(url)
                     .attr("stroke-width", 0);
             });
 
-        svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", margin.top / 2)
-            .attr("text-anchor", "middle")
-            .attr("id", "title")
-            .text("Monthly Global Temperature Variance")
-            .style("font-size", "20px")
-            .style("font-weight", "bold");
+        const legendWidth = 400;
+        const legendHeight = 20;
+
+        const legendGroup = d3.select("#legend")
+            .attr("width", 500)
+            .attr("height", 60)
+            .attr("transform", `translate(10,10)`)
+
+            .append("g")
+
+            .attr("id", "legend")
+
+        const legendGradient = legendGroup.append("defs")
+            .append("linearGradient")
+            .attr("id", "legend-gradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "0%");
+
+        const gradientDomain = d3.range(0, 1.01, 0.01);
+        gradientDomain.forEach(t => {
+            legendGradient.append("stop")
+                .attr("offset", `${t * 100}%`)
+                .attr("stop-color", d3.interpolateCool(t));
+        });
+
+        legendGroup.append("rect")
+            .attr("width", legendWidth)
+            .attr("height", legendHeight)
+            .style("fill", "url(#legend-gradient)");
+
+        const legendScale = d3.scaleLinear()
+            .domain(d3.extent(dataSet, d => d.variance))
+            .range([0, legendWidth]);
+
+        const legendAxis = d3.axisBottom(legendScale)
+            .ticks(6)
+            .tickFormat(d3.format(".1f"));
+
+        legendGroup.append("g")
+            .attr("transform", `translate(0, ${legendHeight})`)
+            .call(legendAxis);
+
 
     });
