@@ -89,7 +89,9 @@ fetch(url)
                 tooltip.style("visibility", "visible")
                     .style("top", `${event.pageY + 10}px`)
                     .style("left", `${event.pageX + 10}px`)
+                    .attr("data-year",d.year)
                     .html(`Year: ${d.year}<br>Month: ${months[d.month - 1]}<br>Variance: ${d.variance}`);
+                    
 
                 d3.select(event.target)
                     .attr("stroke", "black")
