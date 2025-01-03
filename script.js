@@ -46,8 +46,18 @@ fetch(url)
             .attr("transform", `translate(${margin.left}, 0)`)
             .call(yAxis);
 
-        const colorScale = d3.scaleSequential(d3.interpolateCool)
-            .domain(d3.extent(dataSet, d => d.variance / 5));
+        const legendColorScale = d3.scaleQuantize()
+            .domain(d3.extent(dataSet, d => d.variance))
+            .range([
+                "blue",
+                "dodgerblue",
+                "lightblue",
+                "lightyellow",
+                "lightcoral",
+                "ORANGERED",
+                "red",
+                ]);
+        const colorScale = legendColorScale;
 
         svg.selectAll("rect")
             .data(dataSet)
@@ -60,7 +70,7 @@ fetch(url)
             .attr("data-temp", d => baseTemp + d.variance)
             .attr("width", xScale.bandwidth())
             .attr("height", yScale.bandwidth())
-            .style("fill", d => colorScale(baseTemp + d.variance))
+            .style("fill", d => colorScale(d.variance))
             .attr("class", "cell");
 
         const tooltip = d3.select("body").append("div")
@@ -94,42 +104,37 @@ fetch(url)
         const legendWidth = 400;
         const legendHeight = 20;
 
+        // Create a group for the legend
         const legendGroup = d3.select("#legend")
-            .attr("width", 500)
-            .attr("height", 60)
-            .attr("transform", `translate(10,10)`)
-            .append("g")
-            .attr("id", "legend")
-
-        const legendGradient = legendGroup.append("defs")
-            .append("linearGradient")
-            .attr("id", "legend-gradient")
-            .attr("x1", "0%").attr("y1", "0%")
-            .attr("x2", "100%").attr("y2", "0%");
-
-        const gradientDomain = d3.range(0, 1.01, 0.01);
-        gradientDomain.forEach(t => {
-            legendGradient.append("stop")
-                .attr("offset", `${t * 100}%`)
-                .attr("stop-color", d3.interpolateCool(t));
-        });
-
-        legendGroup.append("rect")
             .attr("width", legendWidth)
+            .attr("height", legendHeight + 40)
+            .append("g")
+            .attr("id", "legend");
+
+        // Width of each rectangle in the legend
+        const rectWidth = legendWidth / legendColorScale.range().length;
+
+        // Create the color bars in the legend
+        legendGroup.selectAll("rect")
+            .data(legendColorScale.range())
+            .enter()
+            .append("rect")
+            .attr("x", (d, i) => i * rectWidth)
+            .attr("y", 0)
+            .attr("width", rectWidth)
             .attr("height", legendHeight)
-            .style("fill", "url(#legend-gradient)");
+            .style("fill", d => d);
 
         const legendScale = d3.scaleLinear()
-            .domain(d3.extent(dataSet, d => d.variance))
+            .domain(d3.extent(dataSet, d => d.variance + baseTemp))
             .range([0, legendWidth]);
 
-        const legendAxis = d3.axisBottom(legendScale)
-            .ticks(6)
-            .tickFormat(d3.format(".1f"));
+        const xAxis2 = d3.axisBottom(legendScale)
+            .ticks(legendColorScale.range().length)
+            .tickFormat(d3.format(".2f"));
 
         legendGroup.append("g")
             .attr("transform", `translate(0, ${legendHeight})`)
-            .call(legendAxis);
-
+            .call(xAxis2);
 
     });
