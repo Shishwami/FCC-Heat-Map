@@ -49,14 +49,17 @@ fetch(url)
         const legendColorScale = d3.scaleQuantize()
             .domain(d3.extent(dataSet, d => d.variance))
             .range([
-                "blue",
-                "dodgerblue",
-                "lightblue",
-                "lightyellow",
-                "lightcoral",
-                "ORANGERED",
-                "red",
-                ]);
+                '#a0c8f0', // Light blue
+                '#7db8e4', // Light sky blue
+                '#56a0d3', // Medium light blue
+                '#3b8ec4', // Medium blue
+                '#2578a3', // Dark blue
+                '#f1e15f', // Light yellow
+                '#f1c347', // Yellow
+                '#e68a2e', // Orange-yellow
+                '#e63c3b', // Bright red
+                '#d32020'  // Intense bright red
+            ]);
         const colorScale = legendColorScale;
 
         svg.selectAll("rect")
@@ -101,40 +104,53 @@ fetch(url)
                     .attr("stroke-width", 0);
             });
 
-        const legendWidth = 400;
-        const legendHeight = 20;
 
-        // Create a group for the legend
-        const legendGroup = d3.select("#legend")
-            .attr("width", legendWidth)
-            .attr("height", legendHeight + 40)
-            .append("g")
-            .attr("id", "legend");
-
-        // Width of each rectangle in the legend
-        const rectWidth = legendWidth / legendColorScale.range().length;
-
-        // Create the color bars in the legend
-        legendGroup.selectAll("rect")
-            .data(legendColorScale.range())
-            .enter()
-            .append("rect")
-            .attr("x", (d, i) => i * rectWidth)
-            .attr("y", 0)
-            .attr("width", rectWidth)
-            .attr("height", legendHeight)
-            .style("fill", d => d);
-
-        const legendScale = d3.scaleLinear()
-            .domain(d3.extent(dataSet, d => d.variance + baseTemp))
-            .range([0, legendWidth]);
-
-        const xAxis2 = d3.axisBottom(legendScale)
-            .ticks(legendColorScale.range().length)
-            .tickFormat(d3.format(".2f"));
-
-        legendGroup.append("g")
-            .attr("transform", `translate(0, ${legendHeight})`)
-            .call(xAxis2);
-
+        createLengend(dataSet, baseTemp, legendColorScale);
     });
+
+function createLengend(dataSet, baseTemp, legendColorScale) {
+    const legendWidth = 400;
+    const legendHeight = 20;
+    const margin = 15;
+
+    const legendGroup = d3.select("#legend")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight + margin + 5)
+        .append("g")
+        .attr("id", "legend");
+
+    const rectWidth = (legendWidth - margin * 2) / legendColorScale.range().length;
+
+    legendGroup.selectAll("rect")
+        .data(legendColorScale.range())
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => margin + i * rectWidth)
+        .attr("y", 0)
+        .attr("width", rectWidth)
+        .attr("height", legendHeight)
+        .style("fill", d => d);
+
+    const domain = d3.extent(dataSet, d => Math.round(d.variance + baseTemp));
+    const legendScale = d3.scaleLinear()
+        .domain(domain)
+        .range([0, legendWidth - margin * 2]);
+
+    const numColorSteps = legendColorScale.range().length;
+    console.log(d3.extent(dataSet, d => Math.round(d.variance + baseTemp)));
+
+    const tickInterval = (domain[1] - domain[0]) / numColorSteps;
+
+    const tickValues = [];
+    for (let i = domain[0]; i <= domain[1]; i += tickInterval) {
+        tickValues.push(i);
+    }
+
+    const xAxis2 = d3.axisBottom(legendScale)
+        .tickValues(tickValues)
+        .tickFormat(d3.format(".2f"));
+
+    legendGroup.append("g")
+        .attr("transform", `translate(${margin}, ${legendHeight})`)
+        .call(xAxis2);
+}
