@@ -47,7 +47,7 @@ fetch(url)
             .call(yAxis);
 
         const legendColorScale = d3.scaleQuantize()
-            .domain(d3.extent(dataSet, d => d.variance))
+            .domain(d3.extent(dataSet, d => d.variance + baseTemp))
             .range([
                 '#a0c8f0', // Light blue
                 '#7db8e4', // Light sky blue
@@ -73,7 +73,7 @@ fetch(url)
             .attr("data-temp", d => baseTemp + d.variance)
             .attr("width", xScale.bandwidth())
             .attr("height", yScale.bandwidth())
-            .style("fill", d => colorScale(d.variance))
+            .style("fill", d => colorScale(d.variance  + baseTemp))
             .attr("class", "cell");
 
         const tooltip = d3.select("body").append("div")
@@ -90,7 +90,7 @@ fetch(url)
                     .style("top", `${event.pageY + 10}px`)
                     .style("left", `${event.pageX + 10}px`)
                     .attr("data-year",d.year)
-                    .html(`Year: ${d.year}<br>Month: ${months[d.month - 1]}<br>Variance: ${d.variance}`);
+                    .html(`Year: ${d.year}<br>Month: ${months[d.month - 1]}<br>Variance: ${d.variance}<br>Temp:${baseTemp+d.variance}`);
                     
 
                 d3.select(event.target)
