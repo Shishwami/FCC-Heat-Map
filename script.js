@@ -7,7 +7,7 @@ fetch(url)
         const baseTemp = data.baseTemperature;
         console.log(data);
 
-        const width = 1200;
+        const width = 1300;
         const height = 400;
         const margin = { left: 60, right: 10, top: 20, bottom: 30 }
 
@@ -20,7 +20,6 @@ fetch(url)
         const svg = d3.select("#heatmap")
             .attr("width", width)
             .attr("height", height)
-            .style("background-color", "orange")
 
         const xScale = d3.scaleBand()
             .domain(years)
@@ -74,14 +73,11 @@ fetch(url)
             .attr("width", xScale.bandwidth())
             .attr("height", yScale.bandwidth())
             .style("fill", d => colorScale(d.variance  + baseTemp))
-            .attr("class", "cell");
+            .attr("class", "cell")
 
         const tooltip = d3.select("body").append("div")
             .attr("id", "tooltip")
             .style("position", "absolute")
-            .style("background-color", "lightgray")
-            .style("padding", "5px")
-            .style("border-radius", "5px")
             .style("visibility", "hidden");
 
         svg.selectAll("rect")
@@ -90,7 +86,7 @@ fetch(url)
                     .style("top", `${event.pageY + 10}px`)
                     .style("left", `${event.pageX + 10}px`)
                     .attr("data-year",d.year)
-                    .html(`Year: ${d.year}<br>Month: ${months[d.month - 1]}<br>Variance: ${d.variance}<br>Temp:${baseTemp+d.variance}`);
+                    .html(`${months[d.month - 1]} ${d.year}<br>Temp:${Math.round((baseTemp + d.variance) * 100) / 100} <br>Variance:${d.variance}`);
                     
 
                 d3.select(event.target)
@@ -111,7 +107,7 @@ fetch(url)
     });
 
 function createLengend(dataSet, baseTemp, legendColorScale) {
-    const legendWidth = 400;
+    const legendWidth = 1300;
     const legendHeight = 20;
     const margin = 15;
 
