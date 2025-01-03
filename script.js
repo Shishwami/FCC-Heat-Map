@@ -4,7 +4,7 @@ fetch(url)
     .then(response => response.json())
     .then(data => {
         const dataSet = data.monthlyVariance
-        const baseTemp =data.baseTemperature;
+        const baseTemp = data.baseTemperature;
         console.log(data);
 
         const width = 1200;
@@ -43,11 +43,11 @@ fetch(url)
 
         svg.append("g")
             .attr("id", "y-axis")
-            .attr("transform", `translate(${margin.left}, 0)`) // Correct position
+            .attr("transform", `translate(${margin.left}, 0)`)
             .call(yAxis);
 
         const colorScale = d3.scaleSequential(d3.interpolateCool)
-            .domain(d3.extent(dataSet, d => d.variance));
+            .domain(d3.extent(dataSet, d => d.variance / 5));
 
         svg.selectAll("rect")
             .data(dataSet)
@@ -55,12 +55,12 @@ fetch(url)
             .append("rect")
             .attr("x", d => xScale(String(d.year)))
             .attr("y", d => yScale(d.month - 1))
-            .attr("data-month",d=>d.month)
-            .attr("data-year",d=>d.year)
-            .attr("data-temp",d=>d.month)
+            .attr("data-month", d => d.month - 1)
+            .attr("data-year", d => d.year)
+            .attr("data-temp", d => baseTemp + d.variance)
             .attr("width", xScale.bandwidth())
             .attr("height", yScale.bandwidth())
-            .attr("fill", d => colorScale(d.variance))
+            .style("fill", d => colorScale(baseTemp + d.variance))
             .attr("class", "cell");
 
         const tooltip = d3.select("body").append("div")
@@ -98,9 +98,7 @@ fetch(url)
             .attr("width", 500)
             .attr("height", 60)
             .attr("transform", `translate(10,10)`)
-
             .append("g")
-
             .attr("id", "legend")
 
         const legendGradient = legendGroup.append("defs")
